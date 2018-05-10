@@ -2,7 +2,9 @@
 Gaming on Steroids
 
 ALPHA RIVEN SCRIPT STILL IN DEVELOPMENT
- 
+
+USE QAA MODE 3 !!!!!!!!!!!!! OTHER MODES ARE NOT WORKING RIGTH
+
  -> REQUIERMENTS ARE ICS ORBWALKER ! <-
 
 -------------------------------------------------
