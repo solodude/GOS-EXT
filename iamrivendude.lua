@@ -245,7 +245,7 @@ function Riven:LoadMenu()
 	--ETC
 	self.Menu:MenuElement({id = "CustomSpellCast", name = "Use custom spellcast", tooltip = "Can fix some casting problems with wrong directions and so", value = true})
 	self.Menu:MenuElement({id = "delay", name = "Custom spellcast delay", value = 60, min = 0, max = 600, step = 30, identifier = ""})
-	self.Menu:MenuElement({id = "qaamode", name = "QAA - MODES", value = 5, min = 1, max = 7, })
+	self.Menu:MenuElement({id = "qaamode", name = "QAA - MODES", value = 1, min = 1, max = 7, })
 	self.Menu:MenuElement({id = "blank", type = SPACE , name = ""})
 	self.Menu:MenuElement({id = "blank", type = SPACE , name = "Script Ver: "..Version.. " - LoL Ver: "..LVersion.. "" .. (TPred and " TPred" or "")})
 	self.Menu:MenuElement({id = "blank", type = SPACE , name = "by "..Author.. ""})
