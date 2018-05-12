@@ -416,6 +416,16 @@ function Riven:Tick()
 			self:CastW()
 			EnableOrb()
 		end
+		
+		--if self:CanCast(_E) and myHero.alive then
+		--	Target = (_G.SDK and _G.SDK.TargetSelector:GetTarget(1450, _G.SDK.DAMAGE_TYPE_PHYSICAL)) or (_G.GOS and _G.GOS:GetTarget(1150,"AD"))
+		--	if Target and Target.valid and Target.alive then
+		--		local icdamage = self:GetIncomingDamage(Target)
+		--		if  icdamage > 180 then
+		--			self:CastE()
+		--		end
+		--	end
+		--end	
 	
 		--ENGAGE
 		--W
@@ -948,11 +958,19 @@ function Riven:CastW()
 	local target = target or (_G.SDK and _G.SDK.TargetSelector:GetTarget(W.Range, _G.SDK.DAMAGE_TYPE_PHYSICAL)) or (_G.GOS and _G.GOS:GetTarget(W.Range,"AD"))
 	
 	if target and target.type == "AIHeroClient" and self:CanCast(_W) and target.valid then
+<<<<<<< HEAD
 		--if not self:IsImmobileTarget(target) then
 			local castPos
 			castPos = target:GetPrediction(W.Speed,W.Delay)
 			_G.Control.CastSpell(HK_W, castPos)
 		--end
+=======
+		if not self:IsImmobileTarget(target) then
+			local castPos
+			castPos = target:GetPrediction(W.Speed,W.Delay)
+			_G.Control.CastSpell(HK_W, castPos)
+		end
+>>>>>>> e45e0b9d53f14d97ed2c66ecacc8356ef0659cb0
 	end
 end
 
