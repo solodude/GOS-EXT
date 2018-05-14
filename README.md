@@ -3,7 +3,7 @@ Gaming on Steroids
 
 ALPHA RIVEN SCRIPT STILL IN DEVELOPMENT
 
-USE QAA MODE 1 OR 3 !!!!!!!!!!!!! OTHER MODES ARE NOT WORKING RIGTH
+DELAY IS NOT WORKING ATM !
 
  -> REQUIERMENTS ARE ICS ORBWALKER ! <-
 
@@ -24,3 +24,5 @@ special event - W if stunt / Use r2 early if myHero low
 TODO:
 
 to do q aa logic use of passive ... so most part i need to do still  
+
+and more... 
