@@ -3,7 +3,7 @@ keybindings = { [ITEM_1] = HK_ITEM_1, [ITEM_2] = HK_ITEM_2, [ITEM_3] = HK_ITEM_3
 
 
 
--- CREDITS HPred / Ics Orbwalker  / Auto script auto : Sikaka / & more soon updated !
+-- CREDITS HPred / Ics Orbwalker  / Auto script auto : Sikaka / Toscin 
 
 local minicounter
 local orb_
@@ -105,7 +105,7 @@ function Riven:LoadSpells()
 	Q = {
 		type = "linear",
 		Range = 275, 
-		Widht = myHero:GetSpellData(0).width,
+		Widht = 30,
 		Delay = 0.25,
 		Speed = 1800,
 		collision=false
@@ -218,25 +218,21 @@ function Riven:LoadMenu()
 	self.Menu.Combo:MenuElement({id = "comboActive", name = "Combo key", key = string.byte(" ")})
 	self.Menu.Combo:MenuElement({id = "rCombo", name = "R Combo", key = string.byte("T")})
 	self.Menu.Combo:MenuElement({id = "fleemode", name = "Flee mode", key = string.byte("A")})
-	self.Menu.Combo:MenuElement({id = "comboDelay", name = "Delay / Verify cast", value = true})
 	self.Menu.Combo:MenuElement({id = "blank", type = SPACE , name = ""})
 	self.Menu.Combo:MenuElement({id = "farmUseQ", name = "Farm - Use Q", value = true})
-	self.Menu.Combo:MenuElement({id = "farmUseW", name = "Farm - Use W", value = true})
+	self.Menu.Combo:MenuElement({id = "farmUseW", name = "Farm - Use W | INWORK", value = true})
 	self.Menu.Combo:MenuElement({id = "farmactive", name = "Farm key", key = string.byte("V")})
 	self.Menu.Combo:MenuElement({id = "blank", type = SPACE , name = ""})
-	self.Menu.Combo:MenuElement({id = "comboUseR", name = "Use R if killable", value = true})
+	self.Menu.Combo:MenuElement({id = "comboUseR", name = "Use R if killable | INWORK", value = true})
 	self.Menu.Combo:MenuElement({id = "secondR", name = "Use R2 if killable", value = true})
-	for i, hero in pairs(self:GetEnemyHeroes()) do
-		self.Menu.Combo:MenuElement({id = "RU"..hero.charName, name = "UseR in rCombo only on: "..hero.charName, value = true})
-	end
 	
 	
 
 	--[[Harass]]
 	self.Menu:MenuElement({type = MENU, id = "Harass", name = "Harass Settings"})
-	self.Menu.Harass:MenuElement({id = "harassUseQ", name = "Use Q", value = true})
-	self.Menu.Harass:MenuElement({id = "harassUseW", name = "Use W", value = true})
-	self.Menu.Harass:MenuElement({id = "harassUseE", name = "Use E", value = true})
+	self.Menu.Harass:MenuElement({id = "harassUseQ", name = "Use Q | INWORK", value = true})
+	self.Menu.Harass:MenuElement({id = "harassUseW", name = "Use W | INWORK", value = true})
+	self.Menu.Harass:MenuElement({id = "harassUseE", name = "Use E | INWORK", value = true})
 	self.Menu.Harass:MenuElement({id = "harassActive", name = "Harass key", key = string.byte("C")})
 	--KS
 	self.Menu:MenuElement({type = MENU, id = "KSMenu", name = "KS Settings"})
@@ -263,9 +259,8 @@ function Riven:LoadMenu()
 	self.Menu.DrawMenu:MenuElement({id = "RRangeC", name = "R Range color", color = Draw.Color(0xBFBF3FFF)})
 	
 	--ETC
-	self.Menu:MenuElement({id = "CustomSpellCast", name = "Use custom spellcast", tooltip = "Can fix some casting problems with wrong directions and so", value = true})
-	self.Menu:MenuElement({id = "delay", name = "Custom spellcast delay", value = 60, min = 0, max = 600, step = 30, identifier = ""})
-
+	self.Menu:MenuElement({id = "CustomSpellCast", name = "Use custom spellcast", tooltip = "Can fix some casting problems", value = true})
+	self.Menu:MenuElement({id = "delay", name = "Custom spellcast delay | NOT FOR Q", value = 60, min = 0, max = 600, step = 30, identifier = ""})
 	self.Menu:MenuElement({id = "blank", type = SPACE , name = ""})
 	self.Menu:MenuElement({id = "blank", type = SPACE , name = "Script Ver: "..Version.. " - LoL Ver: "..LVersion.. "" .. (TPred and " TPred" or "")})
 	self.Menu:MenuElement({id = "blank", type = SPACE , name = "by "..Author.. ""})
@@ -310,8 +305,6 @@ function Riven:Tick()
 		
 		if fleemode and  _G.SDK.ORBWALKER_MODE_FLEE then
 			if self:IsEvading() then return end
-			if NextSpellCast > Game.Timer() then return end
-			
 			self:CastFlee()
 			
 		elseif KillSteal then
@@ -321,28 +314,32 @@ function Riven:Tick()
 			if self:IsAttacking() and self:IsDelaying() then return end
 			
 			--AUTO IGNITE
-
+			
 			
 			if ignite then
+			
 				closeEnemies = self:GetEnemyHeroes(600, myHero.pos)
 				for i = 1, #closeEnemies do
 					local enemy = closeEnemies[i];
+					if not self:IsReady(_Q) or self:IsReady(_W) or self:IsInRange(myHero.pos, enemy.pos, Q.Range) then
 					local IgniteDmg = (55 + 25 * myHero.levelData.lvl)
 					if enemy and (enemy.health + enemy.shieldAD) < IgniteDmg and enemy.alive and enemy.valid then
 						closeAllies = self:GetAllyHeroes(300, enemy.pos)
 						if (closeAllies[1] == nil) then 
-							if myHero:GetSpellData(SUMMONER_1).name == "SummonerDot" and (Game.CanUseSpell(SUMMONER_1) == 0) then
+							if myHero:GetSpellData(SUMMONER_1).name == "SummonerDot" and (Game.CanUseSpell(SUMMONER_1) == 0) and enemy.alive and stateI == false then
 								Control.CastSpell(HK_SUMMONER_1, enemy)
+								
 							break
-						elseif myHero:GetSpellData(SUMMONER_2).name == "SummonerDot" and (Game.CanUseSpell(SUMMONER_2) == 0) then
-							Control.CastSpell(HK_SUMMONER_2, enemy)
+						elseif myHero:GetSpellData(SUMMONER_2).name == "SummonerDot" and (Game.CanUseSpell(SUMMONER_2) == 0) and enemy.alive and stateI == false then
+								Control.CastSpell(HK_SUMMONER_2, enemy)
+								
 							break
 						end
 					end
 				end
 			end
-		
-
+		end
+			
 			
 			--Q
 			if self:CanCast(_Q) and self.Menu.KSMenu.KillStealQ:Value() then
@@ -387,12 +384,12 @@ function Riven:Tick()
 						castPos = KSTarget:GetPrediction(1450, R.Delay)
 							DisableOrb()
 							_G.Control.CastSpell(HK_R,castPos)
-							DelayAction(function() EnableOrb() end, 0.25 + (Game.Latency()/1000))
+							DelayAction(function() EnableOrb() end, R.Delay + (Game.Latency()/1000))
 							
 							DelayAction(function()
 							local Vec = Vector(myHero.pos):Normalized() * - (myHero.boundingRadius*1.1)
 							_G.Control.Move(Vec)
-							end, (0.05 + Game.Latency()/1000))
+							end, (0.10 + Game.Latency()/1000))
 						return
 					end
 				end
@@ -407,7 +404,7 @@ function Riven:Tick()
 							DelayAction(function()
 							local Vec = Vector(myHero.pos):Normalized() * - (myHero.boundingRadius*1.1)
 							_G.Control.Move(Vec)
-							end, (0.05 + Game.Latency()/1000))
+							end, (0.10 + Game.Latency()/1000))
 					return
 				end
 			end
@@ -418,7 +415,7 @@ function Riven:Tick()
 
 		local Qcd = myHero:GetSpellData(0).currentCd
 		local ICDamage = 0
-			
+		
 		
 		--SPECIAL EVENTS
 		
@@ -433,7 +430,7 @@ function Riven:Tick()
 				Target = (_G.SDK and _G.SDK.TargetSelector:GetTarget(1450, _G.SDK.DAMAGE_TYPE_PHYSICAL)) or (_G.GOS and _G.GOS:GetTarget(1450,"AD"))
 					if Target and Target.valid and Target.alive then 	
 						local HPE = Target.health/(Target.maxHealth)*100
-						if HPE <= 40 and self:CanCast(_Q) then 
+						if HPE <= 40 and self:CanCast(_Q) and KSTarget.valid then 
 							local castPos
 							castPos = KSTarget:GetPrediction(1450, 0.25)
 							DisableOrb()
@@ -453,7 +450,7 @@ function Riven:Tick()
 		--W
 		if self.Menu.Combo.comboUseW and self:CanCast(_W) then
 			local HPD = myHero.health/(myHero.maxHealth)*100
-			if (HPD <= 20) then
+			if (HPD <= 19) then
 				self:CastW()
 				self:CastAA()
 				if NextSpellCast > Game.Timer() then return end	
@@ -477,7 +474,7 @@ function Riven:Tick()
 		end	
 		
 		--NORMALCOMBO
-		--self:QSpellLoop()
+		self:QSpellLoop()
 		
 		if self.Menu.Combo.comboUseQ:Value() and self:CanCast(_Q) then
 			self:CastTQ()
@@ -485,14 +482,10 @@ function Riven:Tick()
 		
 		
 		--W
-			if self.Menu.Combo.comboUseW:Value() and self:CanCast(_W) then
+			if self.Menu.Combo.comboUseW:Value() and self:CanCast(_W) and Qstacks == 1 then
 				self:CastW()
-				if not self:CanCast(_W) then
-					if _G.GOS:CanAttack(myHero)then
-						self:CastAA()
-						if NextSpellCast > Game.Timer() then return end
-					end
-				end
+			elseif self:CanCast(_W) and self.Menu.Combo.comboUseW:Value() and self:CanCast(_Q) == false then
+				self:CastW()
 			end
 		
 		--MULTITARGETS
@@ -554,7 +547,7 @@ function Riven:QSpellLoop()
 
 			for i=1, 3 do
 				if timeSinceCast < 0.1 + (i==3 and 0.25 or 0) and spellQ.ammo == i and Qstacks ~= i then 
-					PrintChat("Q"..i.." Casted") 
+					--PrintChat("Q"..i.." Casted") 
 									
 					Qstacks = i  
 					
