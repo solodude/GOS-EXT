@@ -3,7 +3,7 @@ keybindings = { [ITEM_1] = HK_ITEM_1, [ITEM_2] = HK_ITEM_2, [ITEM_3] = HK_ITEM_3
 
 
 
--- CREDITS HPred / Ics Orbwalker  / Auto script auto : Sikaka / for paste ;)
+-- CREDITS HPred / Ics Orbwalker  / Auto script auto : Sikaka / & more soon updated !
 
 local minicounter
 local orb_
@@ -385,9 +385,14 @@ function Riven:Tick()
 					if KSDamage > KSTarget.health then 
 						local castPos
 						castPos = KSTarget:GetPrediction(1450, R.Delay)
-						DisableOrb()
-						_G.Control.CastSpell(HK_R,castPos)
-						DelayAction(function() EnableOrb() end, R.Delay + (Game.Latency()/1000) )
+							DisableOrb()
+							_G.Control.CastSpell(HK_R,castPos)
+							DelayAction(function() EnableOrb() end, 0.25 + (Game.Latency()/1000))
+							
+							DelayAction(function()
+							local Vec = Vector(myHero.pos):Normalized() * - (myHero.boundingRadius*1.1)
+							_G.Control.Move(Vec)
+							end, (0.05 + Game.Latency()/1000))
 						return
 					end
 				end
@@ -396,8 +401,13 @@ function Riven:Tick()
 				if KSDamage > KSTarget.health then 
 					castPos = KSTarget:GetPrediction(R.Speed,R.Delay)
 					DisableOrb()
-					_G.Control.CastSpell(HK_R,castPos)
-					DelayAction(function() EnableOrb() end, R.Delay + (Game.Latency()/1000))
+							_G.Control.CastSpell(HK_R,castPos)
+							DelayAction(function() EnableOrb() end, 0.25 + (Game.Latency()/1000))
+							
+							DelayAction(function()
+							local Vec = Vector(myHero.pos):Normalized() * - (myHero.boundingRadius*1.1)
+							_G.Control.Move(Vec)
+							end, (0.05 + Game.Latency()/1000))
 					return
 				end
 			end
@@ -428,8 +438,12 @@ function Riven:Tick()
 							castPos = KSTarget:GetPrediction(1450, 0.25)
 							DisableOrb()
 							_G.Control.CastSpell(HK_R,castPos)
-							DelayAction(function() EnableOrb() end, 0.1 + (Game.Latency()/1000))
+							DelayAction(function() EnableOrb() end, 0.25 + (Game.Latency()/1000))
 							
+							DelayAction(function()
+							local Vec = Vector(myHero.pos):Normalized() * - (myHero.boundingRadius*1.1)
+							_G.Control.Move(Vec)
+							end, (0.05 + Game.Latency()/1000))
 						end
 					end
 			end
@@ -740,7 +754,7 @@ end
 
 LastCancel = Game.Timer()
 function Riven:CastTQ(target)
-    local qrange = 420 --myHero:GetSpellData(_Q).range
+    local qrange = 420 
     local qtarg = _G.SDK.TargetSelector:GetTarget(qrange)
 	
     if qtarg and qtarg.valid then
@@ -757,7 +771,7 @@ function Riven:CastTQ(target)
                     DelayAction(function()
                     local Vec = Vector(myHero.pos):Normalized() * - (myHero.boundingRadius*1.1)
                     _G.Control.Move(Vec)
-                    end, (0.25 + Game.Latency()/1000))
+                    end, (0.15 + Game.Latency()/1000))
                 end
             end
         else
@@ -773,7 +787,7 @@ function Riven:CastTQ(target)
                     	DelayAction(function()
                     	local Vec = Vector(myHero.pos):Normalized() * - (myHero.boundingRadius*1.1)
                     	_G.Control.Move(Vec)
-                    	end, (0.25 + Game.Latency()/1000))
+                    	end, (0.15 + Game.Latency()/1000))
                 	end
             	end
         	end
