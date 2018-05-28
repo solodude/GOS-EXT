@@ -251,7 +251,7 @@ function Riven:Combo()
 		if self.Menu.ComboMode.UseR2:Value() and EnemyCount(myHero.pos, 950) >= 2 and myHero:GetSpellData(3).name == "RivenIzunaBlade" and self:CanCast(_R) and target.isTargetable and target.valid and target.health > 0 then
 			local castPos, accuracy = _G.Alpha.Geometry:GetCastPosition(myHero, target, 950, 0.25, 1600, 50, false, false)
 			if accuracy >= self.Menu.ComboMode.AccuracyR2:Value() and _G.Alpha.Geometry:IsInRange(myHero.pos, target.pos, 950) then
-				EnableOrb()
+				DisableOrb()
 				_G.Control.CastSpell(HK_R, castPos)
 				DelayAction(function() EnableOrb() end, 0.10)
 			end
