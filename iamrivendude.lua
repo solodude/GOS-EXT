@@ -96,13 +96,14 @@ function Riven:LoadMenu()
 	self.Menu.ComboMode:MenuElement({id = "UseW", name = "Use W", value = true})
 	self.Menu.ComboMode:MenuElement({id = "UseE", name = "Use E", value = true})
 	self.Menu.ComboMode:MenuElement({id = "UseR2", name = "Use R2", value = true})
+	self.Menu.ComboMode:MenuElement({id = "UseXE", name = "R2 X Enemys to cast", value = 2, min = 1, max = 6, step = 1 })
 	self.Menu.ComboMode:MenuElement({id = "AccuracyR2", name = "R2 Accuracy", value = 2, min = 1, max = 6, step = 1 })
 	self.Menu.ComboMode:MenuElement({id = "comboActive", name = "Combo key", key = string.byte(" ")})
 	self.Menu.ComboMode:MenuElement({id = "fleeActive", name = "Flee key", key = string.byte(" ")})
 	self.Menu.ComboMode:MenuElement({id = "UseHYDRA", name = "Use hydra", value = true})
 	self.Menu.ComboMode:MenuElement({id = "UseGHOST", name = "Use ghostblade", value = true})
 	self.Menu.ComboMode:MenuElement({id = "DrawDamage", name = "Draw damage on HPbar", value = true})
-		
+	
 	self.Menu:MenuElement({id = "HarassMode", name = "Harass", type = MENU})
 	self.Menu.HarassMode:MenuElement({id = "UseQ", name = "Use Q", value = true})
 	self.Menu.HarassMode:MenuElement({id = "UseW", name = "Use W", value = true})
@@ -112,6 +113,7 @@ function Riven:LoadMenu()
 	self.Menu:MenuElement({id = "KSMenu", name = "Killsteal", type = MENU})
 	self.Menu.KSMenu:MenuElement({id = "UseQ", name = "Use Q", value = true})
 	self.Menu.KSMenu:MenuElement({id = "UseW", name = "Use W", value = true})
+	--self.Menu.KSMenu:MenuElement({id = "UseER2", name = "Use E -> R2", value = true})
 	self.Menu.KSMenu:MenuElement({id = "UseR2", name = "Use R2", value = true})
 	self.Menu.KSMenu:MenuElement({id = "AccuracyR2", name = "R2 Accuracy", value = 2, min = 1, max = 6, step = 1 })
 
@@ -122,7 +124,7 @@ function Riven:LoadMenu()
 
 	self.Menu:MenuElement({id = "CustomSpellCast", name = "Use custom spellcast", tooltip = "Can fix some WTF problems with wrong directions", value = true})
 	self.Menu:MenuElement({id = "delay", name = "Custom spellcast delay", value = 100, min = 0, max = 200, step = 5,tooltip = "increase this one if spells is going completely wrong direction", identifier = ""})
-	
+	self.Menu:MenuElement({id = "Drawings", name = "Drawings", tooltip = "", value = true})
 	self.Menu:MenuElement({id = "blank", type = SPACE , name = ""})
 	self.Menu:MenuElement({id = "blank", type = SPACE , name = "Script Ver: "..Version.. " - LoL Ver: "..LVersion.. ""})
 	self.Menu:MenuElement({id = "blank", type = SPACE , name = "by "..Author.. ""})
@@ -138,7 +140,7 @@ end
 
 function Riven:Tick()
     if myHero.dead or Game.IsChatOpen() == true or IsRecalling() == true then return end
-	SetMovement(true)
+	
 	
 	if self.Menu.ComboMode.fleeActive:Value() then
 		self:Flee()
@@ -175,12 +177,13 @@ function Riven:Combo()
 	
 	self:QSpellLoop()
 	
-
-	
-	
 	if target and target.valid and target.isTargetable then
 		local THP = target.health/(target.maxHealth)*100
 		
+		
+		if self.Menu.ComboMode.UseGHOST:Value() and Etarget and Etarget.valid and Etarget.isTargetable and EnemyCount(myHero.pos, 300) >= 1  then
+			UseGhost()
+		end
 		
 		if self.Menu.ComboMode.UseW:Value() and self:CanCast(_W) and Wtarget and Wtarget.valid and Wtarget.isTargetable then
 			local HPD = myHero.health/(myHero.maxHealth)*100
@@ -220,16 +223,18 @@ function Riven:Combo()
 			
 		elseif self.Menu.ComboMode.UseQ:Value() and self:CanCast(_Q) then
 			
-			self:CastQ()
 			
-			if self.Menu.ComboMode.UseHYDRA:Value() and self:EnemyInRange(174) then
+			
+			if self.Menu.ComboMode.UseHYDRA:Value() and self:EnemyInRange(174) and Qstacks > 1 then
 				if myHero.attackData.state == STATE_WINDDOWN then
 					UseHydra()
 				end
 			end
 			
+			self:CastQ()
+			
 		end
-		
+
 		if Qstacks >= 1 and self:CanCast(_W) and self.Menu.ComboMode.UseW:Value() and Wtarget and Wtarget.valid and Wtarget.isTargetable then
 			
 			local castPos = Wtarget:GetPrediction(W.Speed, W.Delay)
@@ -248,12 +253,12 @@ function Riven:Combo()
 			UseHydra()
 		end
 		
-		if self.Menu.ComboMode.UseR2:Value() and EnemyCount(myHero.pos, 950) >= 2 and myHero:GetSpellData(3).name == "RivenIzunaBlade" and self:CanCast(_R) and target.isTargetable and target.valid and target.health > 0 then
+		if self.Menu.ComboMode.UseR2:Value() and EnemyCount(myHero.pos, 950) >= self.Menu.ComboMode.UseXE:Value() and myHero:GetSpellData(3).name == "RivenIzunaBlade" and self:CanCast(_R) and target.isTargetable and target.valid and target.health > 0 then
 			local castPos, accuracy = _G.Alpha.Geometry:GetCastPosition(myHero, target, 950, 0.25, 1600, 50, false, false)
 			if accuracy >= self.Menu.ComboMode.AccuracyR2:Value() and _G.Alpha.Geometry:IsInRange(myHero.pos, target.pos, 950) then
-				DisableOrb()
+				SetMovement(false)
 				_G.Control.CastSpell(HK_R, castPos)
-				DelayAction(function() EnableOrb() end, 0.10)
+				DelayAction(function() SetMovement(true) end, 0.15)
 			end
 		end
 		
@@ -295,21 +300,27 @@ function Riven:Harass()
 end
 
 function Riven:Flee()
-	
-	if GetMode() == "Flee" then  
+	 
+	if GetMode() == "Flee" then 
+		local target = CurrentTarget(500)
+		
+		if target and target.valid and self:EnemyInRange(500) and self.Menu.ComboMode.UseGHOST:Value() then
+			UseGhost()
+		end
 		
 		if self:CanCast(_E) then
 		
 			_G.Control.CastSpell(HK_E, cursorPos)
 			if self:CanCast(_Q) then
-				DelayAction(function() _G.Control.CastSpell(HK_Q, cursorPos) end, 0.1)			
+				DelayAction(function() _G.Control.CastSpell(HK_Q, cursorPos) end, 0.20)			
 			end
 			
-		elseif self:CanCast(_Q) then
+		elseif self:CanCast(_Q) and not self:IsDelaying() then
 		
 			_G.Control.CastSpell(HK_Q, cursorPos)
 		
 		end
+		
 		
 	end
 end
@@ -332,8 +343,16 @@ for i, hero in pairs(self:GetEnemyHeroes()) do
 		end
 	
 	elseif self.Menu.KSMenu.UseQ:Value() and self:CanCast(_Q) and QDamage > 0 then
-
-		local target = CurrentTarget(275)
+		local QUrange
+		
+		if Qstacks == 2 then
+			QUrange = 350
+		elseif Qstacks == 1 or Qstacks == 0 or Qstacks == 3 then
+			QUrange = 275
+		end
+		
+		local target = CurrentTarget(QUrange)
+		
 		if target and target.valid and target.isTargetable and QDamage >= target.health and myHero.attackData.state == STATE_WINDDOWN then
 			local castPos = target:GetPrediction(Q.Speed, Q.Delay)
 			_G.Control.CastSpell(HK_Q, castPos)
@@ -347,15 +366,18 @@ for i, hero in pairs(self:GetEnemyHeroes()) do
 			_G.Control.CastSpell(HK_W, castPos)
 		end
 	
+	--elseif self.Menu.KSMenu.UseER2:Value() and myHero:GetSpellData(3).name == "RivenIzunaBlade" and self:CanCast(_R) and self:CanCast(_E) then
+		
+	
 	elseif self.Menu.KSMenu.UseR2:Value() and myHero:GetSpellData(3).name == "RivenIzunaBlade" and self:CanCast(_R) and RDamage > 0 then
 	
-		local target = CurrentTarget(950)
+		local target = CurrentTarget(850)
 		if target and target.valid and target.isTargetable and RDamage >= target.health and _G.Alpha.Geometry:IsInRange(myHero.pos, target.pos, 950) then
 			local castPos, accuracy = _G.Alpha.Geometry:GetCastPosition(myHero, target, 950, 0.25, 1600, 50, false, false)
 			if accuracy >= self.Menu.KSMenu.AccuracyR2:Value() then
-			DisableOrb()
+			SetMovement(false)
 			_G.Control.CastSpell(HK_R, castPos)
-			DelayAction(function() EnableOrb() end, 0.10)
+			DelayAction(function() SetMovement(true) end, 0.25)
 			end
 		end
 	
@@ -371,7 +393,7 @@ function Riven:Clear()
 		local minion = Game.Minion(i)
 		if minion and minion.team == 300 or minion.team ~= myHero.team then
 	
-			if self:CanCast(_Q) and self.Menu.ClearMode.UseQ:Value() and minion then 
+			if self:CanCast(_Q) and self.Menu.ClearMode.UseQ:Value() and minion and minion.valid then 
 				if self.Menu.ClearMode.UseQ:Value() and ValidTarget(minion, 275) then
 					if myHero.pos:DistanceTo(minion.pos) <= Q.range and myHero.attackData.state == STATE_WINDDOWN then
 						local castPos, accuracy = _G.Alpha.Geometry:GetCastPosition(myHero, minion, Q.range, 0.25, Q.speed, self:getQwidth(), false, true)
@@ -383,7 +405,7 @@ function Riven:Clear()
 				end
 			end
 
-			if self:CanCast(_W) and self.Menu.ClearMode.UseW:Value()and minion then 
+			if self:CanCast(_W) and self.Menu.ClearMode.UseW:Value()and minion and minion.valid then 
 				if self.Menu.ClearMode.UseW:Value() and ValidTarget(minion, 250) then
 					if myHero.pos:DistanceTo(minion.pos) <= 250 and myHero.attackData.state == STATE_WINDDOWN then
 						Control.CastSpell(HK_W)
@@ -392,7 +414,7 @@ function Riven:Clear()
 				end
 			end
 			
-			if self.Menu.ComboMode.UseHYDRA:Value() and minion then
+			if self.Menu.ComboMode.UseHYDRA:Value() and minion and minion.valid then
 				if myHero.pos:DistanceTo(minion.pos) < 170 then
 					UseHydraminion()
 				end
@@ -516,9 +538,11 @@ function LeftClick(pos)
 end
 
 function Riven:Draw()
+	if not self.Menu.Drawings:Value() then return end
     local textPos = myHero.pos:To2D()
     if self:CanCast(_Q) then Draw.Circle(myHero.pos, 275, 2,  Draw.Color(255, 255, 000, 255)) end
     if self:CanCast(_R) then Draw.Circle(myHero.pos, 950, 2,  Draw.Color(255, 255, 000, 255)) end
+	--if self:CanCast(_R) and self:CanCast(_E) then Draw.Circle(myHero.pos, 450 + 900, 2,  Draw.Color(255, 255, 000, 255)) end
 	if self.Menu.ComboMode.DrawDamage:Value() then
 		for i, hero in pairs(self:GetEnemyHeroes()) do
 			local barPos = hero.hpBar
@@ -527,9 +551,9 @@ function Riven:Draw()
 				local WDamage = (self:CanCast(_W) and getdmg("W",hero,myHero) or 0)
 				local EDamage = (self:CanCast(_E) and getdmg("E",hero,myHero) or 0)
 				local RDamage = (self:CanCast(_R) and getdmg("R",hero,myHero) or 0)
-				local damage = QDamage + WDamage + EDamage + RDamage
+				local damage = QDamage + WDamage + QDamage + RDamage
 				if damage > hero.health then
-					Draw.Text("killable", 24, hero.pos2D.x, hero.pos2D.y,Draw.Color(0xFF00FF00))
+					Draw.Text("Killable!", 24, hero.pos2D.x, hero.pos2D.y,Draw.Color(0xFF00FF00))
 					
 				else
 					local percentHealthAfterDamage = math.max(0, hero.health - damage) / hero.maxHealth
@@ -552,12 +576,23 @@ function GetInventorySlotItem(itemID)
 end
 	
 function UseHydra()
-		local HTarget = CurrentTarget(125)
-	if HTarget then 
+		local HTarget = CurrentTarget(300)
+	if HTarget and HTarget.valid and HTarget.isTargetable then 
 		local hydraitem = GetInventorySlotItem(3748) or GetInventorySlotItem(3077)
 		if hydraitem then
 			Control.CastSpell(HKITEM[hydraitem],HTarget.pos)
             Control.Attack(HTarget)
+		end
+	end
+end
+
+function UseGhost()
+	local HPD = myHero.health/(myHero.maxHealth)*100
+	
+	if HPD >= 5 then 
+		local ghostitem = GetInventorySlotItem(3142)
+		if ghostitem then
+			Control.CastSpell(HKITEM[ghostitem])
 		end
 	end
 end
