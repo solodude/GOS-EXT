@@ -82,7 +82,7 @@ function GetMode()
 end
 
 function Riven:LoadSpells()
-	Q = { range = 275, delay = 0.25, speed = 1800, width = 30, IsLine = true}
+	Q = { range = 275, delay = 0.25, speed = 1800, width = 112.5, IsLine = true}
 	W = { range = myHero:GetSpellData(_W).range, delay = 0.267, speed = 999999, IsLine = false }
 	E = { range = 300, delay = 0.25, speed = 1450, width = 0, IsLine = true }
 	R = { range = 950, delay = 0.25, speed = 1600, width = myHero:GetSpellData(_R).width, radius = 50, Angle= 50, IsLine = false, collision=false }
@@ -373,23 +373,21 @@ function Riven:Clear()
 	
 			if self:CanCast(_Q) and self.Menu.ClearMode.UseQ:Value() and minion then 
 				if self.Menu.ClearMode.UseQ:Value() and ValidTarget(minion, 275) then
-					if myHero.pos:DistanceTo(minion.pos) > 270 and myHero.attackData.state == STATE_WINDDOWN then
-						local castPos = minion:GetPrediction(Q.Range, Q.Delay)
-						self:CastSpell(HK_Q, castPos)
-						if minion then
-						Control.Attack(minion)
+					if myHero.pos:DistanceTo(minion.pos) <= Q.range and myHero.attackData.state == STATE_WINDDOWN then
+						local castPos, accuracy = _G.Alpha.Geometry:GetCastPosition(myHero, minion, Q.range, 0.25, Q.speed, self:getQwidth(), false, true)
+						if accuracy >= 2 then
+							self:CastSpell(HK_Q, castPos)
 						end
+						
 					end
 				end
 			end
 
 			if self:CanCast(_W) and self.Menu.ClearMode.UseW:Value()and minion then 
 				if self.Menu.ClearMode.UseW:Value() and ValidTarget(minion, 250) then
-					if myHero.pos:DistanceTo(minion.pos) < 250 and myHero.attackData.state == STATE_WINDDOWN then
+					if myHero.pos:DistanceTo(minion.pos) <= 250 and myHero.attackData.state == STATE_WINDDOWN then
 						Control.CastSpell(HK_W)
-						if minion then
-						Control.Attack(minion)
-						end
+						
 					end
 				end
 			end
@@ -408,7 +406,7 @@ end
 function Riven:Evade()
 	
 	--OnSpellCast()
-
+	
 end
 	
 
@@ -605,24 +603,17 @@ end
 
 LastCancel = Game.Timer()
 function Riven:CastQ(target)
-    local qrange = 420 
     local qtarg = CurrentTarget(qrange)
-	local QRONGE = 275
-	self:QSpellLoop()
 	
     if qtarg and qtarg.valid then
 		
-		if Qstacks >= 2 then
-			QRONGE = 420
-		else
-			QRONGE = 275
-		end
+		
 		
         if qtarg.dead or qtarg.isImmune then return end
-        if myHero.pos:DistanceTo(qtarg.pos) < 420 and self:HasBuff(myHero, "rivenwindslashready") then    --myHero.range
+        if myHero.pos:DistanceTo(qtarg.pos) < 310 and self:HasBuff(myHero, "rivenwindslashready") then    --myHero.range
             if self:CanCast(_Q) and myHero.attackData.state == STATE_WINDDOWN then
 				
-                local castPos, accuracy = _G.Alpha.Geometry:GetCastPosition(myHero, qtarg, QRONGE, 0.25, 1450, 30, false, true)
+                local castPos, accuracy = _G.Alpha.Geometry:GetCastPosition(myHero, qtarg, 310, Q.delay, Q.speed, self:getQwidth(), false, true)
 				if accuracy >= self.Menu.ComboMode.AccuracyQ:Value() then
 					DisableOrb()
 					_G.Control.CastSpell(HK_Q,qtarg)
@@ -638,9 +629,9 @@ function Riven:CastQ(target)
 				end
 			end
         else
-        	if myHero.pos:DistanceTo(qtarg.pos) < QRONGE and not self:HasBuff(myHero, "rivenwindslashready") then    --Q without buff less range wont chase with q but aa more reliable
+        	if myHero.pos:DistanceTo(qtarg.pos) < Q.range and not self:HasBuff(myHero, "rivenwindslashready") then    --Q without buff less range wont chase with q but aa more reliable
             	if self:CanCast(_Q) and myHero.attackData.state == STATE_WINDDOWN then
-                	local castPos, accuracy = _G.Alpha.Geometry:GetCastPosition(myHero, qtarg, QRONGE, 0.25, 1450, 30, false, false)
+                	local castPos, accuracy = _G.Alpha.Geometry:GetCastPosition(myHero, qtarg, Q.range, Q.delay, Q.speed, self:getQwidth(), false, false)
 					if accuracy >= self.Menu.ComboMode.AccuracyQ:Value() then
 						DisableOrb()
 						_G.Control.CastSpell(HK_Q,qtarg)
@@ -658,6 +649,31 @@ function Riven:CastQ(target)
         	end
         end
     end
+end
+
+function Riven:getQwidth()
+
+	if self:HasBuff(myHero, "RivenFengShuiEngine") then
+		if Qstacks == 0 or Qstacks == 1 or Qstacks == 3 then
+			return 112.5
+		end
+		
+		if Qstacks == 2 then
+			return 150
+		end
+		
+	else
+	
+		if Qstacks == 0 or Qstacks == 1 or Qstacks == 3 then
+			return 162.5
+		end
+		
+		if Qstacks == 2 then
+			return 200
+		end
+		
+	end
+	
 end
 
 function Riven:CastSpell(spell,pos)
